@@ -143,6 +143,48 @@ fn main() {
             args.icon, state, count
         );
     } else if args.todo {
-        println!("todo output");
+        let cmd = Command::new("todo")
+            .arg("--porcelain")
+            .output();
+
+        let stdout = match cmd {
+            Ok(o) => o.stdout,
+            Err(e) => {
+                eprintln!("Error running todo: {}", e);
+                process::exit(1);
+            }
+        };
+
+        let output = match String::from_utf8(stdout) {
+            Ok(o) => o,
+            Err(e) => {
+                eprintln!("Converting output failed: {}", e);
+                process::exit(1);
+            }
+        };
+
+        let mut parsed = match json::parse(&output){
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("parsing JSON failed: {}", e);
+                process::exit(1);
+            }
+        };
+        
+        let count = parsed.len();
+        println!("{:#?}", count);
+
+        let mut tasks: Vec<String> = Vec::new();
+        for due in parsed.members() {
+            tasks.push(due.as_str().unwrap().to_string());
+        }
+        /*
+        for i in parsed {
+            i.foo();
+        }
+        */
+
+
+
     }
 }
