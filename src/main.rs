@@ -1,4 +1,4 @@
-use chrono::{Local, NaiveTime};
+use chrono::{Local, NaiveDateTime, NaiveTime};
 use std::process;
 use std::process::Command;
 use structopt::StructOpt;
@@ -42,20 +42,13 @@ enum Status {
     Crit,
 }
 
-fn get_status(events: Vec<String>, w: i64, c: i64) -> Result<Status, String> {
-    let now = Local::now().time();
+fn get_status(events: Vec<NaiveDateTime>, w: i64, c: i64) -> Result<Status, String> {
+    let now = Local::now();
     let mut event_remaining: i64 = 24 * 60;
     let mut state = Status::Idle;
 
     for e in events.iter() {
-        let e_start = match NaiveTime::parse_from_str(e, "%H:%M") {
-            Ok(s) => s,
-            Err(f) => {
-                let message = format!("error parsing time value: {}", f);
-                return Err(message);
-            }
-        };
-        let diff = e_start - now;
+        let diff = *e - now.naive_local();
         if (diff.num_minutes() < event_remaining) && (diff.num_minutes() >= 0) {
             event_remaining = diff.num_minutes()
         }
@@ -123,10 +116,18 @@ fn main() {
             }
         };
 
-        let mut events: Vec<String> = Vec::new();
+        let today = Local::today();
+        let mut events: Vec<NaiveDateTime> = Vec::new();
         if dayline.trim() == "Today" {
             for e in out_iter {
-                events.push(e.to_string());
+                let event_start = match NaiveTime::parse_from_str(e, "%H:%M") {
+                    Ok(s) => s,
+                    Err(f) => {
+                        eprintln!("Error parsing event start time: {}", f);
+                        process::exit(1);
+                    }
+                };
+                events.push(today.and_time(event_start).unwrap().naive_local());
             }
         }
         let count = events.len();
@@ -143,9 +144,7 @@ fn main() {
             args.icon, state, count
         );
     } else if args.todo {
-        let cmd = Command::new("todo")
-            .arg("--porcelain")
-            .output();
+        let cmd = Command::new("todo").arg("--porcelain").output();
 
         let stdout = match cmd {
             Ok(o) => o.stdout,
@@ -163,28 +162,34 @@ fn main() {
             }
         };
 
-        let mut parsed = match json::parse(&output){
+        let mut parsed = match json::parse(&output) {
             Ok(p) => p,
             Err(e) => {
                 eprintln!("parsing JSON failed: {}", e);
                 process::exit(1);
             }
         };
-        
+
         let count = parsed.len();
-        println!("{:#?}", count);
+        //println!("{:#?}", count);
 
-        let mut tasks: Vec<String> = Vec::new();
+        let mut tasks: Vec<NaiveDateTime> = Vec::new();
         for due in parsed.members() {
-            tasks.push(due.as_str().unwrap().to_string());
+            tasks.push( 
+                NaiveDateTime::from_timestamp(due["due"].as_i64().unwrap(), 0)
+                );
         }
-        /*
-        for i in parsed {
-            i.foo();
-        }
-        */
-
-
-
+        let state = 
+            match get_status(tasks, args.threshold_warn, args.threshold_crit)  {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("{}", e);
+                process::exit(1);
+            }
+        };
+        println!(
+            "{{ \"icon\": \"{}\", \"state\": \"{:?}\", \"text\": \"{}\" }}",
+            args.icon, state, count
+        );
     }
 }
