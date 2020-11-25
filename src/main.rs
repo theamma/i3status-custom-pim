@@ -44,7 +44,7 @@ enum Status {
 
 fn get_status(events: Vec<NaiveDateTime>, w: i64, c: i64) -> Result<Status, String> {
     let now = Local::now();
-    let mut event_remaining: i64 = 24 * 60;
+    let mut event_remaining: i64 = 365 * 24 * 60;
     let mut state = Status::Idle;
 
     for e in events.iter() {
@@ -70,7 +70,7 @@ fn main() {
 
     if (!args.khal && !args.todo) || (args.khal && args.todo) {
         eprintln!("Please provide either khal or todo flag.");
-        Cli::clap().print_help();
+        Cli::clap().print_help().unwrap();
         println!();
         process::exit(1);
     }
@@ -162,7 +162,7 @@ fn main() {
             }
         };
 
-        let mut parsed = match json::parse(&output) {
+        let parsed = match json::parse(&output) {
             Ok(p) => p,
             Err(e) => {
                 eprintln!("parsing JSON failed: {}", e);
