@@ -38,8 +38,8 @@ struct Cli {
 #[derive(Debug)]
 enum Status {
     Idle,
-    Warn,
-    Crit,
+    Warning,
+    Critical,
 }
 
 fn get_status(events: Vec<NaiveDateTime>, w: i64, c: i64) -> Result<Status, String> {
@@ -55,10 +55,10 @@ fn get_status(events: Vec<NaiveDateTime>, w: i64, c: i64) -> Result<Status, Stri
 
         if event_remaining >= 0 {
             if event_remaining <= w {
-                state = Status::Warn;
+                state = Status::Warning;
             }
             if event_remaining <= c {
-                state = Status::Crit;
+                state = Status::Critical;
             }
         }
     }
