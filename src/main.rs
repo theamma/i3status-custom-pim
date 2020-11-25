@@ -175,12 +175,12 @@ fn main() {
 
         let mut tasks: Vec<NaiveDateTime> = Vec::new();
         for due in parsed.members() {
-            tasks.push( 
-                NaiveDateTime::from_timestamp(due["due"].as_i64().unwrap(), 0)
-                );
+            tasks.push(NaiveDateTime::from_timestamp(
+                due["due"].as_i64().unwrap(),
+                0,
+            ));
         }
-        let state = 
-            match get_status(tasks, args.threshold_warn, args.threshold_crit)  {
+        let state = match get_status(tasks, args.threshold_warn, args.threshold_crit) {
             Ok(s) => s,
             Err(e) => {
                 eprintln!("{}", e);
