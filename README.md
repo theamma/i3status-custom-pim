@@ -45,7 +45,7 @@ Thresholds for *warning* or *critical* state can be given via commandline switch
 Please run `i3status-custom-pim --help` for available options.
 ```
 i3status-custom-pim 0.1.0
-Martin Bley <martin@mb-oss.de>
+Martin Bley <dev@mb-oss.de>
 Generates JSON output for use with custom block of i3status-rust.
 
 USAGE:
