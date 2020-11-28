@@ -122,9 +122,8 @@ fn main() {
             for e in out_iter {
                 let event_start = match NaiveTime::parse_from_str(e, "%H:%M") {
                     Ok(s) => s,
-                    Err(f) => {
-                        eprintln!("Error parsing event start time: {}", f);
-                        process::exit(1);
+                    Err(_f) => {
+                        continue;
                     }
                 };
                 events.push(today.and_time(event_start).unwrap().naive_local());
