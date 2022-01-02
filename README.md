@@ -42,6 +42,8 @@ json = true
 
 Thresholds for *warning* or *critical* state can be given via commandline switches. In *warning* state the widget will change the background colour to orange, in *critical* state to red.
 
+Please note: A due date has to be set for each task, otherwise the block will run into an error. This bug is addressed in issue #2.
+
 Please run `i3status-custom-pim --help` for available options.
 ```
 i3status-custom-pim 0.1.0
