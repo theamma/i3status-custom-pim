@@ -110,10 +110,7 @@ fn main() {
 
         let dayline = match out_iter.nth(0) {
             Some(d) => d,
-            None => {
-                eprintln!("Output seems empty. Exiting");
-                process::exit(1);
-            }
+            None => { "None" }
         };
 
         let today = Local::today();
